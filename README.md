@@ -1,63 +1,199 @@
-﻿# 📦 Inventory Management System
+# 📦 Inventory Management System
 
-A web-based Inventory Management System designed to simplify product and stock management using Python and Flask.
+A web-based inventory and order management application built with **Python, Flask, and MongoDB**, featuring user authentication, inventory operations, order processing, and graph-based delivery route optimization.
 
 ## 📌 Overview
 
-The Inventory Management System helps manage inventory records and organize product information through a web-based interface. It demonstrates the use of backend development, database integration, and frontend technologies to build a practical web application.
+The Inventory Management System provides a web interface for managing products, tracking stock quantities, and processing orders.
 
-## 🚀 Features
+The application combines a Flask backend, MongoDB database, and frontend interface. It also includes graph algorithms for finding routes between factories, warehouses, and users.
 
-* Manage product and inventory records.
-* Store and retrieve product information.
-* User-friendly web interface.
-* Backend development using Python and Flask.
-* Database integration with MongoDB.
+## ✨ Features
 
+### 🔐 User Authentication
+
+* User registration and login.
+* Password hashing for stored user credentials.
+* Session-based access control for protected pages.
+* Password validation during registration.
+
+### 📦 Inventory Management
+
+* Create and retrieve inventory records.
+* Update and delete products.
+* Search products by name, category, or description.
+* Track stock quantities and product information.
+* Record creation and update timestamps.
+
+### 🚚 Order Management
+
+* Process factory-to-warehouse orders.
+* Process warehouse-to-user orders.
+* Validate product availability before dispatch.
+* Update inventory quantities during supported order operations.
+* Store order records in MongoDB.
+
+### 🗺️ Route Optimization
+
+* Dijkstra's algorithm for shortest-path calculations.
+* Kruskal's algorithm for minimum spanning tree calculations.
+* Graph-based representation of factories, warehouses, and users.
+* Nearby-user searches based on route distances.
+
+### 🌐 Web Interface
+
+* Flask-rendered HTML pages.
+* CSS styling and JavaScript functionality.
+* Dashboard, inventory, orders, routes, login, and signup pages.
 
 ## 🛠️ Technologies Used
 
-* **Backend:** Python, Flask
-* **Database:** MongoDB
-* **Frontend:** HTML, CSS, JavaScript
-* **Version Control:** Git and GitHub
+| Technology     | Purpose                        |
+| -------------- | ------------------------------ |
+| Python         | Application logic              |
+| Flask          | Web application and routing    |
+| MongoDB        | Database                       |
+| PyMongo        | MongoDB integration            |
+| HTML           | Page structure                 |
+| CSS            | Styling                        |
+| JavaScript     | Frontend interactions          |
+| Flask-CORS     | Cross-origin resource handling |
+| Git and GitHub | Version control                |
 
 ## 📂 Project Structure
 
 ```text
-inventory-management-system/
+Inventory-Management-System/
 ├── app.py
-├── templates/
-├── static/
 ├── requirements.txt
+├── test_api.py
+├── users.json
+├── backend/
+│   ├── algorithms/
+│   │   ├── graph.py
+│   │   ├── mst.py
+│   │   └── order_routing.py
+│   ├── config/
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── init_db.py
+│   ├── models/
+│   │   ├── inventory.py
+│   │   └── order.py
+│   └── routes/
+│       └── inventory.py
+├── frontend/
+│   ├── static/
+│   │   ├── css/
+│   │   └── js/
+│   └── templates/
 └── README.md
 ```
 
-## Progress Screenshots 
-![Screenshot 2025-06-08 183644](https://github.com/user-attachments/assets/8b844310-25c2-4aab-bf19-bcd6ec1c30d5)
-![Screenshot 2025-06-08 183811](https://github.com/user-attachments/assets/dcbc78e5-caad-42b1-a375-9b64cd67e362)
-![Screenshot 2025-06-08 183835](https://github.com/user-attachments/assets/350896bd-8623-4a76-b988-228786ed8d2c)
-![Screenshot 2025-06-08 183854](https://github.com/user-attachments/assets/e7242399-2e06-42fa-8ba9-6ae6ab68f8d1)
-![Screenshot 2025-06-08 183915](https://github.com/user-attachments/assets/399c5de1-1291-4dd1-ae23-b5fea6f20685)
+## ⚙️ Installation and Setup
 
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/bramhayyachar018/Inventory-Management-System.git
+cd Inventory-Management-System
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+Activate the environment on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Install Flask-CORS if it is not already included in the dependency file:
+
+```bash
+pip install flask-cors
+```
+
+**Dependency note:** The current application imports `flask_cors`, but the provided `requirements.txt` does not list `flask-cors`. Add it to `requirements.txt` so fresh installations work correctly.
+
+### 4. Configure MongoDB
+
+Make sure MongoDB is running locally or that you have access to a MongoDB deployment.
+
+Create a `.env` file in the project root:
+
+```env
+MONGO_URI=mongodb://localhost:27017
+MONGO_DBNAME=inventoryDB
+SECRET_KEY=replace_with_a_long_random_secret
+```
+
+For MongoDB Atlas, use your database connection string as `MONGO_URI`.
+
+Keep your `.env` file private. Never commit database credentials or production secrets to GitHub.
+
+### 5. Run the application
+
+```bash
+python app.py
+```
+
+The application is configured to use port `5000` in its local API test script. Check the startup configuration in `app.py` if the server uses a different port.
+
+Open the local address displayed by the application in your browser.
+
+## 🧪 API Testing
+
+The repository includes `test_api.py`, a script that sends requests to the inventory API.
+
+After starting the application, open another terminal and run:
+
+```bash
+python test_api.py
+```
+
+The script attempts to create a test inventory item and retrieve inventory records.
+
+The test script uses `requests`, so install it if needed:
+
+```bash
+pip install requests
+```
+
+## 🧠 Algorithms Implemented
+
+### Dijkstra's Shortest-Path Algorithm
+
+Used to calculate shortest paths between locations represented in a weighted graph.
+
+### Kruskal's Minimum Spanning Tree Algorithm
+
+Used to select edges with minimum total weight without introducing cycles, using a Union-Find data structure.
+
+These algorithms demonstrate how graph theory can be applied to logistics and delivery-routing problems.
 
 ## 🎯 Learning Outcomes
 
-* Understanding Flask application development.
-* Working with a NoSQL database.
-* Connecting frontend interfaces with backend logic.
-* Organizing and maintaining a software project.
+* Developing a web application with Flask.
+* Integrating Python applications with MongoDB.
+* Implementing session-based authentication.
+* Designing inventory and order-processing operations.
+* Working with REST-style API endpoints.
+* Applying graph algorithms to route optimization.
+* Testing API requests using Python.
 
 ## 👨‍💻 Author
 
 **Bramhayya Achari**
 
-GitHub: [Your GitHub Profile](https://github.com/bramhayyachar018)
-
-
-
-
-
-
-
+GitHub: [bramhayyachar018](https://github.com/bramhayyachar018)
 
