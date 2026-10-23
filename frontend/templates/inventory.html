@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory | Inventory Logistics</title>
+  <meta name="description" content="Logistics Management System" />
+  <meta name="author" content="Inventory" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <style>
+    :root {
+      --primary: #0f4c81;
+      --primary-foreground: #ffffff;
+      --background: #f9fafb;
+      --muted: #f1f5f9;
+      --muted-foreground: #64748b;
+      --border: #e2e8f0;
+      --radius: 0.5rem;
+      --sidebar-width: 16rem;
+      --sidebar-width-collapsed: 4rem;
+      --sidebar-background: #1a1f2c;
+      --sidebar-foreground: #f8fafc;
+      --header-height: 4rem;
+    }
+
+    body {
+      margin: 0;
+      
+      background-color: var(--background);
+      color: #1e293b;
+      font-size: 0.875rem;
+    }
+    html{
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      display: flex;
+    }
+/* Sidebar */
+        .sidebar {
+            background-color: var(--sidebar-background);
+            color: var(--sidebar-foreground);
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 30;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+  
+
+    
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: bold;
+    }
+
+    .logo-icon {
+      background-color: var(--primary);
+      color: white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .sidebar-nav {
+            padding: 1rem 0.5rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 0.25rem;
+            color: var(--sidebar-foreground);
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link-active {
+            background-color: rgba(255, 255, 255, 0.2);
+            font-weight: 500;
+            text-decoration: none;
+            
+        }
+
+    
+
+   
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      color: #dc2626;
+      font-weight: 500;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background-color: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .profile-btn {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      background-color: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .page-content {
+      padding: 2rem;
+      flex-grow: 1;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .text-muted {
+      color: var(--muted-foreground);
+    }
+
+    .card {
+      background-color: white;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-content {
+      padding: 1.5rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+    }
+
+    .btn-outline {
+      background: none;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .filters {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .search-field {
+      position: relative;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .search-field input {
+      width: 100%;
+      padding: 0.5rem 2rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .search-field i {
+      position: absolute;
+      top: 50%;
+      left: 0.75rem;
+      transform: translateY(-50%);
+      color: var(--muted-foreground);
+    }
+
+    .filter-group select {
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    /* Table */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table thead {
+      background-color: var(--muted);
+    }
+
+    .badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: white;
+      background-color: #10b981;
+    }
+
+    .badge.outline {
+      background-color: #facc15;
+      color: #000;
+    }
+
+    .badge.destructive {
+      background-color: #ef4444;
+    }
+
+    .footer {
+      padding: 1rem;
+      text-align: center;
+      font-size: 0.875rem;
+      background-color: #fff;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 768px) {
+      .page-header,
+      .filters {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+      }
+
+      .mobile-menu-toggle {
+        display: inline-block;
+      }
+    }
+
+    /* Add Item Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+
+    .modal-content {
+      position: relative;
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--muted-foreground);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">DK</div>
+          <span class="logo-text">Inventory</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('inventory') }}" class="nav-link nav-link-active">
+          <span>Inventory</span>
+        </a>
+        <a href="{{ url_for('orders') }}" class="nav-link">
+          <span>Orders</span>
+        </a>
+        <a href="{{ url_for('routes') }}" class="nav-link">
+          <span>Routes</span>
+        </a>
+        <a href="#" class="nav-link">
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+          <i data-feather="log-out"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="header">
+        <div class="header-actions">
+          <button class="btn btn-outline"><i data-feather="bell"></i></button>
+          <button class="profile-btn">
+            <div class="avatar">JD</div>
+          </button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <div>
+            <h1>Inventory</h1>
+            <p class="text-muted">Manage your inventory items</p>
+          </div>
+          <button id="openAddItemModal" class="btn btn-primary"><i data-feather="plus"></i> Add Item</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>Inventory Items</h2>
+          </div>
+          <div class="card-content">
+            <div class="filters">
+              <div class="search-field">
+                <i data-feather="search"></i>
+                <input type="search" id="inventory-search" placeholder="Search items..." />
+              </div>
+              <div class="filter-group">
+                <select id="category-filter">
+                  <option value="">All Categories</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Food Products">Food Products</option>
+                  <option value="Pharmaceuticals">Pharmaceuticals</option>
+                  <option value="Home Goods">Home Goods</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item ID</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        &copy; <span id="current-year"></span> Inventory Logistics. All rights reserved.
+      </footer>
+    </main>
+  </div>
+
+  <!-- Add Item Modal -->
+  <div id="addItemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Item</h3>
+        <button class="close-modal" id="closeAddItemModal">&times;</button>
+      </div>
+      <form id="addItemForm">
+        <div class="form-group">
+          <label for="itemName">Item Name</label>
+          <input type="text" id="itemName" name="name" required placeholder="Enter item name">
+        </div>
+        <div class="form-group">
+          <label for="itemCategory">Category</label>
+          <select id="itemCategory" name="category" required>
+            <option value="">Select a category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Food Products">Food Products</option>
+            <option value="Pharmaceuticals">Pharmaceuticals</option>
+            <option value="Home Goods">Home Goods</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="itemQuantity">Quantity</label>
+          <input type="number" id="itemQuantity" name="quantity" required min="0" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label for="itemPrice">Price</label>
+          <input type="number" id="itemPrice" name="price" required min="0" step="0.01" placeholder="Enter price">
+        </div>
+        <div class="form-group">
+          <label for="itemDescription">Description (Optional)</label>
+          <textarea id="itemDescription" name="description" placeholder="Enter item description"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelAddItem">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Item Modal -->
+  <div id="editItemModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Item</h3>
+        <button class="close-modal" id="closeEditItemModal">&times;</button>
+      </div>
+      <form id="editItemForm">
+        <input type="hidden" id="editItemId" name="_id">
+        <div class="form-group">
+          <label for="editItemName">Item Name</label>
+          <input type="text" id="editItemName" name="name" required placeholder="Enter item name">
+        </div>
+        <div class="form-group">
+          <label for="editItemCategory">Category</label>
+          <select id="editItemCategory" name="category" required>
+            <option value="">Select a category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Food Products">Food Products</option>
+            <option value="Pharmaceuticals">Pharmaceuticals</option>
+            <option value="Home Goods">Home Goods</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editItemQuantity">Quantity</label>
+          <input type="number" id="editItemQuantity" name="quantity" required min="0" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+          <label for="editItemPrice">Price</label>
+          <input type="number" id="editItemPrice" name="price" required min="0" step="0.01" placeholder="Enter price">
+        </div>
+        <div class="form-group">
+          <label for="editItemDescription">Description (Optional)</label>
+          <textarea id="editItemDescription" name="description" placeholder="Enter item description"></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" id="cancelEditItem">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Modal functionality
+    const addItemModal = document.getElementById('addItemModal');
+    const openAddItemModal = document.getElementById('openAddItemModal');
+    const closeAddItemModal = document.getElementById('closeAddItemModal');
+    const cancelAddItem = document.getElementById('cancelAddItem');
+    const addItemForm = document.getElementById('addItemForm');
+
+    // Open modal
+    openAddItemModal.addEventListener('click', () => {
+      addItemModal.style.display = 'block';
+    });
+
+    // Close modal functions
+    function closeModal() {
+      addItemModal.style.display = 'none';
+      addItemForm.reset();
+    }
+
+    closeAddItemModal.addEventListener('click', closeModal);
+    cancelAddItem.addEventListener('click', closeModal);
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === addItemModal) {
+        closeModal();
+      }
+    });
+
+    // Handle form submission
+    addItemForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        name: document.getElementById('itemName').value,
+        category: document.getElementById('itemCategory').value,
+        quantity: parseInt(document.getElementById('itemQuantity').value),
+        price: parseFloat(document.getElementById('itemPrice').value),
+        description: document.getElementById('itemDescription').value
+      };
+
+      console.log('Submitting form data:', formData);
+
+      try {
+        console.log('Calling inventoryApi.createItem...');
+        const response = await inventoryApi.createItem(formData);
+        console.log('Response from server:', response);
+        
+        if (response.status === 'success') {
+          // Close modal and reset form
+          closeModal();
+          // Refresh the inventory list
+          loadInventory();
+          // Show success message
+          alert('Item added successfully!');
+        } else {
+          console.error('Server returned error:', response.message);
+          alert('Failed to add item: ' + response.message);
+        }
+      } catch (error) {
+        console.error('Error adding item:', error);
+        alert('Failed to add item. Please try again.');
+      }
+    });
+
+    // Function to load inventory items
+    async function loadInventory() {
+      try {
+        const response = await inventoryApi.getAllItems();
+        if (response.status === 'success') {
+          const inventoryTableBody = document.getElementById('inventory-table-body');
+          inventoryTableBody.innerHTML = ''; // Clear existing rows
+
+          response.data.forEach(item => {
+            const row = inventoryTableBody.insertRow();
+
+            // Item ID
+            row.insertCell().textContent = item._id || 'N/A';
+            // Name
+            row.insertCell().textContent = item.name;
+            // Category
+            row.insertCell().textContent = item.category;
+            // Stock (Quantity)
+            row.insertCell().textContent = item.quantity;
+            // Price
+            row.insertCell().textContent = `$${item.price.toFixed(2)}`;
+            // Status (Example: Based on quantity)
+            const statusCell = row.insertCell();
+            if (item.quantity > 50) {
+              statusCell.innerHTML = '<span class="badge">In Stock</span>';
+            } else if (item.quantity > 0) {
+              statusCell.innerHTML = '<span class="badge outline">Low Stock</span>';
+            } else {
+              statusCell.innerHTML = '<span class="badge destructive">Out of Stock</span>';
+            }
+            // Actions
+            const actionsCell = row.insertCell();
+            actionsCell.innerHTML = `
+              <button class="btn btn-sm btn-outline edit-item-btn" data-id="${item._id}"><i data-feather="edit"></i></button>
+              <button class="btn btn-sm btn-destructive delete-item-btn" data-id="${item._id}"><i data-feather="trash-2"></i></button>
+            `;
+          });
+
+          feather.replace(); // Re-render feather icons after adding new elements
+          console.log('Inventory loaded and table updated.');
+        } else {
+          console.error('Server returned error for inventory load:', response.message);
+        }
+      } catch (error) {
+        console.error('Error loading inventory:', error);
+        alert('Failed to load inventory. Please check console for details.');
+      }
+    }
+
+    // Load inventory when page loads
+    loadInventory();
+
+    // Edit Item Modal functionality
+    const editItemModal = document.getElementById('editItemModal');
+    const closeEditItemModal = document.getElementById('closeEditItemModal');
+    const cancelEditItem = document.getElementById('cancelEditItem');
+    const editItemForm = document.getElementById('editItemForm');
+
+    function closeEditModal() {
+      editItemModal.style.display = 'none';
+      editItemForm.reset();
+    }
+
+    closeEditItemModal.addEventListener('click', closeEditModal);
+    cancelEditItem.addEventListener('click', closeEditModal);
+
+    window.addEventListener('click', (e) => {
+      if (e.target === editItemModal) {
+        closeEditModal();
+      }
+    });
+
+    // Event delegation for Edit and Delete buttons
+    document.getElementById('inventory-table-body').addEventListener('click', async (e) => {
+      // Handle Edit button click
+      if (e.target.closest('.edit-item-btn')) {
+        const button = e.target.closest('.edit-item-btn');
+        const itemId = button.dataset.id;
+        console.log('Edit button clicked for item:', itemId);
+
+        try {
+          const response = await inventoryApi.getById(itemId);
+          if (response.status === 'success') {
+            const item = response.data;
+            document.getElementById('editItemId').value = item._id;
+            document.getElementById('editItemName').value = item.name;
+            document.getElementById('editItemCategory').value = item.category;
+            document.getElementById('editItemQuantity').value = item.quantity;
+            document.getElementById('editItemPrice').value = item.price;
+            document.getElementById('editItemDescription').value = item.description || '';
+
+            editItemModal.style.display = 'block';
+          } else {
+            alert('Failed to load item details for editing: ' + response.message);
+          }
+        } catch (error) {
+          console.error('Error fetching item for edit:', error);
+          alert('Error fetching item for edit. Please try again.');
+        }
+      }
+
+      // Handle Delete button click
+      if (e.target.closest('.delete-item-btn')) {
+        const button = e.target.closest('.delete-item-btn');
+        const itemId = button.dataset.id;
+        console.log('Delete button clicked for item:', itemId);
+
+        if (confirm('Are you sure you want to delete this item?')) {
+          try {
+            const response = await inventoryApi.deleteItem(itemId);
+            if (response.status === 'success') {
+              alert('Item deleted successfully!');
+              loadInventory(); // Refresh the list
+            } else {
+              alert('Failed to delete item: ' + response.message);
+            }
+          } catch (error) {
+            console.error('Error deleting item:', error);
+            alert('Failed to delete item. Please try again.');
+          }
+        }
+      }
+    });
+
+    // Handle Edit form submission
+    editItemForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const itemId = document.getElementById('editItemId').value;
+      const formData = {
+        name: document.getElementById('editItemName').value,
+        category: document.getElementById('editItemCategory').value,
+        quantity: parseInt(document.getElementById('editItemQuantity').value),
+        price: parseFloat(document.getElementById('editItemPrice').value),
+        description: document.getElementById('editItemDescription').value
+      };
+
+      console.log('Submitting edit form data for item:', itemId, formData);
+
+      try {
+        const response = await inventoryApi.updateItem(itemId, formData);
+        if (response.status === 'success') {
+          alert('Item updated successfully!');
+          closeEditModal();
+          loadInventory(); // Refresh the list
+        } else {
+          alert('Failed to update item: ' + response.message);
+        }
+      } catch (error) {
+        console.error('Error updating item:', error);
+        alert('Failed to update item. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Orders | Inventory Logistics</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+    <style>
+        #routeMap {
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .map-container {
+            margin-top: 20px;
+        }
+        .route-info {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+        }
+        .location-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .factory-marker { background: #4CAF50; color: white; }
+        .warehouse-marker { background: #2196F3; color: white; }
+        .user-marker { background: #FFC107; color: white; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">DK</div>
+                    <span class="logo-text">Inventory</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('inventory') }}" class="nav-link">
+                    <span>Inventory</span>
+                </a>
+                <a href="{{ url_for('orders') }}" class="nav-link nav-link-active">
+                    <span>Orders</span>
+                </a>
+                <a href="{{ url_for('routes') }}" class="nav-link">
+                    <span>Routes</span>
+                </a>
+                <a href="#" class="nav-link">
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i data-feather="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-actions">
+                    <button class="btn btn-outline"><i data-feather="bell"></i></button>
+                    <button class="profile-btn">
+                        <div class="avatar">JD</div>
+                    </button>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Supplier Order Form (Factory to Warehouse)</h2>
+                        <form id="supplierOrderForm">
+                            <div id="supplierOrderProducts">
+                                <div class="multi-product-container product-group">
+                                    <div class="form-group">
+                                        <label>Product</label>
+                                        <select name="orderName" required class="product-select">
+                                            <option value="">Select a product</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" required min="1" placeholder="Enter quantity" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="factoryId">Factory ID</label>
+                                <select id="factoryId" name="factory_id" required>
+                                    <option value="">Select Factory</option>
+                                    <option value="factory1">factory1</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="warehouseId">Warehouse ID</label>
+                                <select id="warehouseId" name="warehouse_id" required>
+                                    <option value="">Select Warehouse</option>
+                                    <option value="warehouse1">warehouse1</option>
+                                    <option value="warehouse2">warehouse2</option>
+                                </select>
+                            </div>
+                            <button type="button" id="addSupplierProductBtn" class="btn btn-outline">Add Another Product</button>
+                            <button type="submit" class="btn btn-primary">Place Supplier Order</button>
+                            <div id="supplierOrderStatus" class="success-message"></div>
+                            <div id="supplierOrderError" class="error-message"></div>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>User Order Form (Warehouse to User)</h2>
+                        <form id="userOrderForm">
+                            <div id="userOrderProducts">
+                                <div class="multi-product-container product-group">
+                                    <div class="form-group">
+                                        <label>Product</label>
+                                        <select name="orderName" required class="product-select">
+                                            <option value="">Select a product</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Quantity</label>
+                                        <input type="number" name="quantity" required min="1" placeholder="Enter quantity" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="userNameInput">User Name</label>
+                                <input type="text" id="userNameInput" required placeholder="Enter user name" />
+                            </div>
+                            <button type="button" id="addUserProductBtn" class="btn btn-outline">Add Another Product</button>
+                            <button type="submit" class="btn btn-primary">Place User Order</button>
+                            <div id="userOrderStatus" class="success-message"></div>
+                            <div id="userOrderError" class="error-message"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Add Map Container -->
+                <div class="card map-container">
+                    <h2>Route Visualization</h2>
+                    <div class="route-info" id="routeInfo">
+                        Select a supplier or create an order to see the route
+                    </div>
+                    <div id="routeMap"></div>
+                </div>
+
+                <div class="order-details-section">
+                    <h2>Factory to Warehouse Orders</h2>
+                    <div class="order-details-container" id="factoryToWarehouseOrders">
+                        <p>No orders from factory to warehouse yet.</p>
+                    </div>
+                </div>
+
+                <div class="order-details-section">
+                    <h2>Warehouse to User Orders</h2>
+                    <div class="order-details-container" id="warehouseToUserOrders">
+                        <p>No orders from warehouse to user yet.</p>
+                    </div>
+                </div>
+
+                <div class="order-details-section">
+                    <h2>Process Orders</h2>
+                    <button id="processAllOrdersBtn" class="btn btn-primary">Process All Orders</button>
+                    <div id="orderStatus" class="success-message"></div>
+                    <div id="processError" class="error-message"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+    <script>
+        feather.replace();
+
+        // Store orders grouped by supplier and user
+        const factoryToWarehouseOrdersData = {};
+        const warehouseToUserOrdersData = {};
+        let inventoryItems = []; // Store inventory items
+
+        // Load inventory items
+        async function loadInventoryItems() {
+            try {
+                const response = await inventoryApi.getAllItems();
+                inventoryItems = response.data || [];
+                updateProductSelects();
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+                showMessage('supplierOrderError', 'Failed to load inventory items', true);
+            }
+        }
+
+        // Update all product select dropdowns
+        function updateProductSelects() {
+            const selects = document.querySelectorAll('.product-select');
+            selects.forEach(select => {
+                // Keep the first option (placeholder)
+                select.innerHTML = '<option value="">Select a product</option>';
+                // Add inventory items
+                inventoryItems.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.name;
+                    option.textContent = `${item.name} (Stock: ${item.quantity})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Helper function to create a new product group
+        function createProductGroup() {
+            const group = document.createElement('div');
+            group.className = 'multi-product-container product-group';
+            group.innerHTML = `
+                <div class="form-group">
+                    <label>Product</label>
+                    <select name="orderName" required class="product-select">
+                        <option value="">Select a product</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" name="quantity" required min="1" placeholder="Enter quantity" />
+                </div>
+                <button type="button" class="btn btn-outline remove-product">Remove</button>
+            `;
+            
+            // Add event listener for remove button
+            const removeBtn = group.querySelector('.remove-product');
+            removeBtn.addEventListener('click', () => {
+                group.remove();
+            });
+            
+            // Update the new select with inventory items
+            const select = group.querySelector('.product-select');
+            inventoryItems.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.name;
+                option.textContent = `${item.name} (Stock: ${item.quantity})`;
+                select.appendChild(option);
+            });
+            return group;
+        }
+
+        // --- Helper function to validate order quantity against inventory ---
+        function validateOrderQuantity(orderName, quantity, isSupplierOrder) {
+            const item = inventoryItems.find(item => item.name === orderName);
+            if (!item) {
+                return { valid: false, message: `Product ${orderName} not found in inventory` };
+            }
+            
+            // For supplier orders (factory to warehouse), we don't need to check quantity
+            if (isSupplierOrder) {
+                return { valid: true };
+            }
+            
+            // For user orders (warehouse to user), check if we have enough stock
+            if (quantity > item.quantity) {
+                return { 
+                    valid: false, 
+                    message: `Insufficient stock for ${orderName}. Available: ${item.quantity}, Requested: ${quantity}` 
+                };
+            }
+            
+            return { valid: true };
+        }
+
+        // --- Helper function to gather multiple product inputs from a form container ---
+        function gatherProducts(container, isSupplierOrder = false) {
+            const products = [];
+            const groups = container.querySelectorAll('.product-group');
+            
+            for (const group of groups) {
+                const orderNameSelect = group.querySelector('select[name="orderName"]');
+                const quantityInput = group.querySelector('input[name="quantity"]');
+                
+                const orderName = orderNameSelect?.value.trim();
+                const quantity = parseInt(quantityInput?.value, 10);
+                
+                if (orderName && quantity > 0) {
+                    // Validate quantity against inventory
+                    const validation = validateOrderQuantity(orderName, quantity, isSupplierOrder);
+                    if (!validation.valid) {
+                        throw new Error(validation.message);
+                    }
+                    products.push({ orderName, quantity });
+                }
+            }
+            return products;
+        }
+
+        // --- Helper function to show status messages ---
+        function showMessage(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            
+            element.textContent = message;
+            element.style.display = 'block';
+            
+            if (isError) {
+                element.classList.add('error-message');
+                element.classList.remove('success-message');
+            } else {
+                element.classList.add('success-message');
+                element.classList.remove('error-message');
+            }
+            
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+
+        // --- Update display for Factory to Warehouse orders ---
+        function updateFactoryToWarehouseOrdersDisplay() {
+            const container = document.getElementById('factoryToWarehouseOrders');
+            if(Object.keys(factoryToWarehouseOrdersData).length === 0) {
+                container.innerHTML = '<p>No orders from factory to warehouse yet.</p>';
+                return;
+            }
+            let html = '';
+            for(const supplier in factoryToWarehouseOrdersData) {
+                html += `<div class="user-group"><strong>Supplier: ${supplier}</strong>`;
+                factoryToWarehouseOrdersData[supplier].forEach(order => {
+                    html += `<div class="order-box">
+                        <span class="order-label">${order.orderName}</span>
+                        <span>Quantity: ${order.quantity}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // --- Update display for Warehouse to User orders ---
+        function updateWarehouseToUserOrdersDisplay() {
+            const container = document.getElementById('warehouseToUserOrders');
+            if(Object.keys(warehouseToUserOrdersData).length === 0) {
+                container.innerHTML = '<p>No orders from warehouse to user yet.</p>';
+                return;
+            }
+            let html = '';
+            for(const user in warehouseToUserOrdersData) {
+                html += `<div class="user-group"><strong>User: ${user}</strong>`;
+                warehouseToUserOrdersData[user].forEach(order => {
+                    html += `<div class="order-box">
+                        <span class="order-label">${order.orderName}</span>
+                        <span>Quantity: ${order.quantity}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // --- Supplier Order Form Handling ---
+        const supplierOrderForm = document.getElementById('supplierOrderForm');
+        const supplierProductsContainer = document.getElementById('supplierOrderProducts');
+        const addSupplierProductBtn = document.getElementById('addSupplierProductBtn');
+
+        addSupplierProductBtn.addEventListener('click', () => {
+            supplierProductsContainer.appendChild(createProductGroup());
+        });
+
+        supplierOrderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const factoryId = document.getElementById('factoryId').value.trim();
+            const warehouseId = document.getElementById('warehouseId').value.trim();
+            
+            try {
+                const products = gatherProducts(supplierProductsContainer, true);
+                
+                if(!factoryId) {
+                    showMessage('supplierOrderError', 'Please select a Factory ID.', true);
+                    return;
+                }
+                if(!warehouseId) {
+                    showMessage('supplierOrderError', 'Please select a Warehouse ID.', true);
+                    return;
+                }
+                if(products.length === 0) {
+                    showMessage('supplierOrderError', 'Please provide at least one product with quantity.', true);
+                    return;
+                }
+
+                const orderData = {
+                    factory_id: factoryId,
+                    warehouse_id: warehouseId,
+                    products: products,
+                    order_type: 'factory_to_warehouse'
+                };
+                
+                const response = await orderApi.createOrder(orderData);
+                
+                if(!factoryToWarehouseOrdersData[factoryId]) {
+                    factoryToWarehouseOrdersData[factoryId] = [];
+                }
+                factoryToWarehouseOrdersData[factoryId].push(...products);
+                updateFactoryToWarehouseOrdersDisplay();
+
+                showMessage('supplierOrderStatus', 'Order created successfully!');
+                
+                // Show the route on the map
+                if (response.route) {
+                    const routeCoords = response.route.map(loc => locationMarkers[loc]?.coords);
+                    showRoute(routeCoords, 'factory_to_warehouse');
+                }
+                
+                // Reset form and reload inventory
+                supplierOrderForm.reset();
+                supplierProductsContainer.innerHTML = createProductGroup().outerHTML;
+                await loadInventoryItems();
+                
+            } catch (error) {
+                console.error('Error creating supplier order:', error);
+                showMessage('supplierOrderError', error.message || 'Failed to create supplier order', true);
+            }
+        });
+
+        // --- User Order Form Handling ---
+        const userOrderForm = document.getElementById('userOrderForm');
+        const userProductsContainer = document.getElementById('userOrderProducts');
+        const addUserProductBtn = document.getElementById('addUserProductBtn');
+
+        addUserProductBtn.addEventListener('click', () => {
+            userProductsContainer.appendChild(createProductGroup());
+        });
+
+        userOrderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userName = document.getElementById('userNameInput').value.trim();
+            
+            try {
+                const products = gatherProducts(userProductsContainer, false);
+                
+                if(!userName) {
+                    showMessage('userOrderError', 'Please enter user name.', true);
+                    return;
+                }
+                if(products.length === 0) {
+                    showMessage('userOrderError', 'Please provide at least one product with quantity.', true);
+                    return;
+                }
+
+                const orderData = {
+                    user_name: userName,
+                    products: products,
+                    order_type: 'warehouse_to_user'
+                };
+                
+                const response = await orderApi.createOrder(orderData);
+                
+                if(!warehouseToUserOrdersData[userName]) {
+                    warehouseToUserOrdersData[userName] = [];
+                }
+                warehouseToUserOrdersData[userName].push(...products);
+                updateWarehouseToUserOrdersDisplay();
+
+                showMessage('userOrderStatus', 'Order created successfully!');
+                
+                // Show the route on the map
+                if (response.route) {
+                    const routeCoords = response.route.map(loc => locationMarkers[loc]?.coords);
+                    showRoute(routeCoords, 'warehouse_to_user');
+                }
+                
+                // Reset form and reload inventory
+                userOrderForm.reset();
+                userProductsContainer.innerHTML = createProductGroup().outerHTML;
+                await loadInventoryItems();
+                
+            } catch (error) {
+                console.error('Error creating user order:', error);
+                showMessage('userOrderError', error.message || 'Failed to create user order', true);
+            }
+        });
+
+        // --- Process All Orders Button Handling ---
+        const processAllOrdersBtn = document.getElementById('processAllOrdersBtn');
+
+        processAllOrdersBtn.addEventListener('click', async () => {
+            try {
+                const ordersToProcess = {};
+                if (Object.keys(factoryToWarehouseOrdersData).length > 0) {
+                    ordersToProcess.factory_to_warehouse = Object.values(factoryToWarehouseOrdersData).flat();
+                }
+                if (Object.keys(warehouseToUserOrdersData).length > 0) {
+                    ordersToProcess.warehouse_to_user = Object.values(warehouseToUserOrdersData).flat();
+                }
+
+                if (Object.keys(ordersToProcess).length === 0) {
+                    showMessage('orderStatus', 'No orders to process.');
+                    return;
+                }
+
+                const response = await orderApi.processOrders(ordersToProcess);
+                showMessage('orderStatus', response.message || 'Orders processed successfully!');
+                factoryToWarehouseOrdersData = {}; // Clear processed orders
+                warehouseToUserOrdersData = {}; // Clear processed orders
+                updateFactoryToWarehouseOrdersDisplay();
+                updateWarehouseToUserOrdersDisplay();
+                loadInventoryItems(); // Reload inventory to reflect stock changes
+            } catch (error) {
+                console.error('Error processing orders:', error);
+                showMessage('processError', error.message || 'Failed to process orders.', true);
+            }
+        });
+
+        // Load initial data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInventoryItems();
+            loadOrders(); // Load existing orders
+        });
+
+        // Function to load existing orders
+        async function loadOrders() {
+            try {
+                const response = await orderApi.getAllOrders();
+                if (response.status === 'success') {
+                    // Clear existing data
+                    for (const key in factoryToWarehouseOrdersData) {
+                        delete factoryToWarehouseOrdersData[key];
+                    }
+                    for (const key in warehouseToUserOrdersData) {
+                        delete warehouseToUserOrdersData[key];
+                    }
+
+                    // Populate data from fetched orders
+                    response.data.forEach(order => {
+                        if (order.order_type === 'factory_to_warehouse') {
+                            const supplierName = order.user_id; // Assuming user_id is supplier_name for these orders
+                            if (!factoryToWarehouseOrdersData[supplierName]) {
+                                factoryToWarehouseOrdersData[supplierName] = [];
+                            }
+                            factoryToWarehouseOrdersData[supplierName].push(...order.products);
+                        } else if (order.order_type === 'warehouse_to_user') {
+                            const userName = order.user_id; // Assuming user_id is user_name for these orders
+                            if (!warehouseToUserOrdersData[userName]) {
+                                warehouseToUserOrdersData[userName] = [];
+                            }
+                            warehouseToUserOrdersData[userName].push(...order.products);
+                        }
+                    });
+                    updateFactoryToWarehouseOrdersDisplay();
+                    updateWarehouseToUserOrdersDisplay();
+                } else {
+                    console.error('Error loading orders:', response.message);
+                    showMessage('processError', 'Failed to load orders: ' + response.message, true);
+                }
+            } catch (error) {
+                console.error('Fetch error for orders:', error);
+                showMessage('processError', 'Failed to load orders.', true);
+            }
+        }
+
+        // --- Map Initialization and Functions (Assuming map.js handles actual map logic) ---
+        // Placeholder for map related functions and variables defined in map.js
+        // Ensure `locationMarkers` and `showRoute` are globally accessible if defined in map.js
+
+    </script>
+</body>
+</html>
+
