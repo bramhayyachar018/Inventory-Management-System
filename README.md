@@ -1,26 +1,38 @@
-﻿# Inventory Management System
+﻿# 📦 Inventory Management System
 
-A full-stack inventory management system built with Flask and MongoDB.
+A web-based Inventory Management System designed to simplify product and stock management using Python and Flask.
 
-## Features
+## 📌 Overview
 
-- RESTful API backend using Flask
-- Frontend interface for inventory management
-- User authentication and authorization
-- MongoDB database integration
-- API testing suite
+The Inventory Management System helps manage inventory records and organize product information through a web-based interface. It demonstrates the use of backend development, database integration, and frontend technologies to build a practical web application.
 
-## Project Structure
+## 🚀 Features
 
+* Manage product and inventory records.
+* Store and retrieve product information.
+* User-friendly web interface.
+* Backend development using Python and Flask.
+* Database integration with MongoDB.
+
+
+## 🛠️ Technologies Used
+
+* **Backend:** Python, Flask
+* **Database:** MongoDB
+* **Frontend:** HTML, CSS, JavaScript
+* **Version Control:** Git and GitHub
+
+## 📂 Project Structure
+
+```text
+inventory-management-system/
+├── app.py
+├── templates/
+├── static/
+├── requirements.txt
+└── README.md
 ```
-.
-├── app.py              # Main Flask application
-├── test_api.py         # API test suite
-├── backend/            # Backend logic and routes
-├── frontend/          # Frontend assets and templates
-├── requirements.txt    # Python dependencies
-└── users.json         # User configuration
-```
+
 ## Progress Screenshots 
 ![Screenshot 2025-06-08 183644](https://github.com/user-attachments/assets/8b844310-25c2-4aab-bf19-bcd6ec1c30d5)
 ![Screenshot 2025-06-08 183811](https://github.com/user-attachments/assets/dcbc78e5-caad-42b1-a375-9b64cd67e362)
@@ -29,77 +41,23 @@ A full-stack inventory management system built with Flask and MongoDB.
 ![Screenshot 2025-06-08 183915](https://github.com/user-attachments/assets/399c5de1-1291-4dd1-ae23-b5fea6f20685)
 
 
+## 🎯 Learning Outcomes
 
-## Prerequisites
+* Understanding Flask application development.
+* Working with a NoSQL database.
+* Connecting frontend interfaces with backend logic.
+* Organizing and maintaining a software project.
 
-- Python 3.x
-- MongoDB
-- Virtual environment (recommended)
+## 👨‍💻 Author
 
-## Dependencies
+**Bramhayya Achari**
 
-- Flask 3.0.3 - Web framework
-- PyMongo 4.6.3 - MongoDB driver
-- python-dotenv 1.0.1 - Environment variable management
-- requests 2.31.0 - HTTP library
-- beautifulsoup4 4.12.2 - Web scraping library
+GitHub: [Your GitHub Profile](https://github.com/bramhayyachar018)
 
-## Installation
 
-1. Clone the repository:
-```bash
-git clone https://github.com/Presktok/Inventory_management.git
-cd Inventory_management
-```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
 
-4. Set up environment variables:
-Create a `.env` file with your configuration:
-```
-MONGODB_URI=your_mongodb_uri
-SECRET_KEY=your_secret_key
-```
 
-## Running the Application
 
-1. Start the Flask server:
-```bash
-python app.py
-```
 
-2. Access the application at `http://localhost:5000`
-
-## Testing
-
-Run the test suite:
-```bash
-python test_api.py
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-Your Name - [@Presktok](https://github.com/Presktok)
-
-Project Link: [https://github.com/Presktok/Inventory_management](https://github.com/Presktok/Inventory_management)
